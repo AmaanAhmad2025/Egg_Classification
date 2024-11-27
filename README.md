@@ -1,77 +1,124 @@
-# Egg Classification Project
-
-This project demonstrates how to classify different types of eggs using a machine learning model deployed on Roboflow. The classification is based on images of eggs, showcasing how to utilize the Roboflow API for inference in a Python environment.
-
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [How It Works](#how-it-works)
-- [Important Note on API Key](#important-note-on-api-key)
-- [Contributing](#contributing)
-- [License](#license)
+# Egg Classification using Roboflow API
 
 ## Overview
 
-Eggs can vary in appearance based on various factors. This project uses a trained model to classify eggs into several categories, including:
-- White Egg
-- Brown Egg
-- Dirt Stain Egg
-- Blood Stain Egg
-- Calcium Deposited Egg
-
-## Features
-- Classifies images of eggs using a machine learning model.
-- Utilizes Roboflow's API for inference.
-- Secure handling of API keys with environment variables.
+This project uses the Roboflow API to classify images of eggs into different categories (e.g., White Egg, Brown Egg, Dirt Stain Egg, Blood Stain Egg, Calcium Deposited Egg). The project loads an image, performs classification using a machine learning model hosted on Roboflow, visualizes the prediction with bounding boxes and confidence scores, and saves the annotated image.
 
 ## Requirements
-- Python 3.x
-- Jupyter Notebook
-- `python-dotenv` for managing environment variables
-- `inference-sdk` for interacting with the Roboflow API
 
-## Installation
+Before running the code, ensure you have the following dependencies installed:
 
-1. Clone the repository:
+1. Python 3.x
+2. `opencv-python`
+3. `numpy`
+4. `matplotlib`
+5. `python-dotenv`
+6. `inference_sdk`
+7. `requests` (for API calls)
+
+You can install the necessary libraries using pip:
+
+```bash
+pip install opencv-python numpy matplotlib python-dotenv requests inference_sdk
+```
+
+## Setup Instructions
+
+1. **Get your Roboflow API Key:**
+   - Sign up or log in to [Roboflow](https://roboflow.com/).
+   - Create or use an existing project for egg classification.
+   - Obtain your API key from the Roboflow Dashboard.
+
+2. **Create a `.env` file:**
+   In your project directory, create a `.env` file and add the following content:
+
    ```bash
-   git clone https://github.com/AmaanAhmad2025/Egg_Classification.git
+   ROBLOFLOW_API_KEY=your_roboflow_api_key
    ```
 
-2. Navigate to the project directory:
-   ```bash
-   cd Egg_Classification
-   ```
+   Replace `your_roboflow_api_key` with your actual Roboflow API key.
 
-3. Install required packages:
-   ```bash
-   pip install python-dotenv inference-sdk
-   ```
+## Code Walkthrough
 
-4. Create a `.env` file in the project directory and add your Roboflow API key:
-   ```plaintext
-   ROBLOFLOW_API_KEY=your_api_key_here
-   ```
+### 1. Loading Environment Variables
 
-## Usage
+```python
+from dotenv import load_dotenv
 
-1. Place the image you want to classify in the project directory.
-2. Open the Jupyter Notebook (`egg_classification.ipynb`).
-3. Run the notebook cells to perform inference on the image.
-4. The predicted classes for the eggs will be displayed as output.
+load_dotenv()  # Loads environment variables from the .env file
+```
 
-## How It Works
+This loads the API key stored in the `.env` file.
 
-- The project uses the `dotenv` library to load environment variables from a `.env` file, ensuring that sensitive information like the API key is not hard-coded into the scripts.
-- The image file is sent to the Roboflow model using the `InferenceHTTPClient`.
-- The predicted classes for the eggs are retrieved and presented as the output of the inference process.
+### 2. Initialize the Roboflow Client
 
-## Contributing
+```python
+from inference_sdk import InferenceHTTPClient
 
-Contributions are welcome! If you have suggestions for improvements, please feel free to fork the repository, make your changes, and submit a pull request.
+api_key = os.getenv("ROBLOFLOW_API_KEY")
+
+CLIENT = InferenceHTTPClient(
+    api_url="https://detect.roboflow.com",
+    api_key=api_key
+)
+```
+
+Here, we initialize the `InferenceHTTPClient` with the Roboflow API URL and API key.
+
+### 3. Image Inference
+
+```python
+result = CLIENT.infer(r"C:\path_to_image\Capture.jpg", model_id="egg-classification-xppva/4")
+```
+
+The `infer` function sends an image to the Roboflow API for classification, and returns a prediction result.
+
+### 4. Image Processing and Visualization
+
+```python
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load and annotate the image
+image = cv2.imread(image_path)
+# Perform object detection and draw a rectangle around the egg
+cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+# Annotate with prediction
+cv2.putText(image, text, (text_x, text_y), font, font_scale, color, font_thickness)
+
+# Display image with Matplotlib
+plt.imshow(image_rgb)
+plt.axis('off')
+plt.title("Egg Classification")
+plt.show()
+```
+
+This section uses OpenCV to load the image, draw a bounding box, and annotate the detected egg type and confidence score. The image is displayed using Matplotlib.
+
+### 5. Save Annotated Image
+
+```python
+output_path = r"C:\Users\Hp\Desktop\Capture_Annotated.jpg"
+cv2.imwrite(output_path, image)
+print(f"Annotated image saved at {output_path}")
+```
+
+After the prediction and annotation, the image is saved to the specified path.
+
+## Running the Code
+
+1. Ensure that your `.env` file is properly set up with the correct Roboflow API key.
+2. Run the script, making sure to update the image path to point to the local image you want to classify.
+3. The script will perform the inference, draw bounding boxes, display the image, and save the annotated result.
+
+## Notes
+
+- Ensure that the `model_id` corresponds to the correct project in Roboflow.
+- This code assumes you are working with egg images. If you are working with a different dataset, you will need to update the model and prediction handling code accordingly.
+- You can modify the code to handle more complex visualizations, such as multiple predictions or different annotation styles.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more information.
+This project is open-source and available under the MIT License. Feel free to fork and modify the code.
+
